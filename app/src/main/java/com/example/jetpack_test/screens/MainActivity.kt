@@ -1,6 +1,10 @@
 package com.example.jetpack_test.screens
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -8,6 +12,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.core.app.ActivityCompat
+import kotlin.random.Random
+import androidx.glance.GlanceId
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.jetpack_test.db.MainDb
@@ -16,15 +23,21 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.jetpack_test.data.WeatherModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.util.UUID
 import androidx.navigation.compose.rememberNavController as rememberNavController
 
 const val API_KEY = "b9be71d2e84d4f41813170758242704"
 
 class MainActivity : ComponentActivity() {
-
+    companion object {
+        private const val REQUEST_CODE_LOCATION_PERMISSION = 123
+    }
+    private var locationCity= ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -34,6 +47,44 @@ class MainActivity : ComponentActivity() {
             "test.db"
         ).build()
         val userDao = db.userDao()
+
+
+
+
+                // Проверка разрешений
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Запрос разрешений
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                REQUEST_CODE_LOCATION_PERMISSION
+            )
+            return
+        }
+// Получение геолокации и названия города
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f) { location ->
+            val latitude = location.latitude
+            val longitude = location.longitude
+            val geocoder = Geocoder(this)
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+            if (addresses != null && addresses.isNotEmpty()) {
+                val cityName = addresses[0].locality
+                // Сохранение названия города в переменной locationCity
+                locationCity = cityName
+            } else {
+                // Обработка случая, когда список addresses пустой или null
+                Log.e("Error", "No address found")
+            }
+        }
+
 
 
 
@@ -64,7 +115,7 @@ class MainActivity : ComponentActivity() {
             }
 
 
-            getData("Kazan", this, currentDay)
+            getData("Kazan",  this, currentDay)
 
             // Создание NavHost с использованием NavController и начального маршрута
             val navController = rememberNavController()
@@ -84,16 +135,17 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("WeatherScreen") {
-                    WeatherScreen(currentDay, onClickSync = {
+                    WeatherScreen(currentDay, locationCity, onClickSync = {
                         getData("Kazan", this@MainActivity, currentDay)
                     }, onClickSearch = {
                         dialogState.value = true
                     })
                 }
             }
-
         }
     }
+
+
 }
 
 
@@ -124,6 +176,11 @@ private fun getData(city: String, context: Context, currentDay: MutableState<Wea
     )
     queue.add(sRequest)
 }
+class MyGlanceId(private val id: String) : GlanceId {
+    fun getId(): String {
+        return id
+    }
+}
 
 
 private fun getWeatherByDay(response: String): WeatherModel {
@@ -153,9 +210,7 @@ private fun getWeatherByDay(response: String): WeatherModel {
         item.getJSONObject("day").getString("mintemp_c")
 
     )
-
-
-
-
 }
+
+
 

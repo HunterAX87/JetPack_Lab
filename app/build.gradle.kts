@@ -53,6 +53,10 @@ android {
 
 dependencies {
 
+    // Glance for Widget UI
+    implementation("androidx.glance:glance-material3:1.0.0")
+    implementation("androidx.glance:glance-appwidget:1.0.0")
+
     // Volley HTTP-библиотека
     implementation("com.android.volley:volley:1.2.1")
 

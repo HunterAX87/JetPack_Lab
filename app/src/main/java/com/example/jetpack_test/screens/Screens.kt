@@ -309,6 +309,7 @@ fun SignUpState(userDao: Dao, context: Context, navController: NavController) {
 @Composable
 fun WeatherScreen(
     currentDay: MutableState<WeatherModel>,
+    locationCity:String,
     onClickSync: () -> Unit,
     onClickSearch: () -> Unit
 ) {
@@ -334,6 +335,13 @@ fun WeatherScreen(
             Text(
                 modifier = Modifier.padding(top = 10.dp),
                 text = currentDay.value.time,
+                style = TextStyle(fontSize = 15.sp),
+                color = Color.White
+            )
+
+            Text(
+                modifier = Modifier.padding(top = 10.dp),
+                text = locationCity,
                 style = TextStyle(fontSize = 15.sp),
                 color = Color.White
             )

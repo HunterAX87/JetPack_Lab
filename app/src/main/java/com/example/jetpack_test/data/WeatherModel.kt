@@ -9,4 +9,5 @@ data class WeatherModel(
     val maxTemp: String,
     val minTemp: String,
 
+
 )
