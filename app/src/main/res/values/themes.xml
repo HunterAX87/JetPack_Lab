@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.JetPack_Test" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.JetPack_Test" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="colorPrimary">#00508A</item> <!-- Устанавливаем основной цвет -->
+        <item name="colorPrimaryDark">#003D6A</item> <!-- Устанавливаем темный основной цвет (по желанию) -->
+        <item name="colorAccent">#00508A</item> <!-- Устанавливаем акцентный цвет (по желанию) -->
+    </style>
 </resources>
